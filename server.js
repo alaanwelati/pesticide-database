@@ -281,7 +281,9 @@ app.post('/api/chat', async (req, res) => {
     });
 
     if (!response.ok) {
-      throw new Error('OpenAI hatası');
+    const errText = await response.text();
+    console.error('OpenAI status:', response.status, 'body:', errText);
+    throw new Error('OpenAI hatası: ' + response.status);
     }
 
     const data = await response.json();
