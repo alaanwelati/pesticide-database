@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PestiSmart — Veritabanı</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f8faf8;
+      --surface: #ffffff;
+      --surface2: #f5f7f5;
+      --border: rgba(0,0,0,0.1);
+      --green: #22c55e;
+      --green-dim: #16a34a;
+      --green-dark: #15803d;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --radius: 14px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    .page-header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      transition: all 0.2s;
+    }
+    .back-btn:hover { color: var(--green); border-color: rgba(74,222,128,0.3); }
+
+    .header-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      color: var(--green);
+    }
+
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, var(--green-dark), var(--green-dim));
+      color: #fff;
+    }
+    .btn-green:hover { opacity: 0.9; transform: scale(1.02); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+    .btn-red {
+      background: rgba(248,113,113,0.15);
+      color: var(--red);
+      border: 1px solid rgba(248,113,113,0.25);
+    }
+    .btn-red:hover { background: rgba(248,113,113,0.25); }
+
+    .btn-amber {
+      background: rgba(251,191,36,0.12);
+      color: var(--amber);
+      border: 1px solid rgba(251,191,36,0.2);
+    }
+    .btn-amber:hover { background: rgba(251,191,36,0.22); }
+
+    /* LAYOUT */
+    .page-body {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - 64px);
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .sidebar-section h4 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .stat-pill {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .stat-pill:hover { border-color: rgba(74,222,128,0.3); }
+    .stat-pill.active { border-color: var(--green-dim); background: rgba(74,222,128,0.08); }
+
+    .stat-pill-label { font-size: 0.83rem; color: var(--muted); }
+    .stat-pill-count {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--green);
+      background: rgba(74,222,128,0.1);
+      border-radius: 6px;
+      padding: 2px 8px;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: var(--border);
+    }
+
+    .filter-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .filter-select, .filter-input {
+      width: 100%;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      outline: none;
+      margin-bottom: 12px;
+      transition: border-color 0.2s;
+    }
+    .filter-select:focus, .filter-input:focus { border-color: rgba(74,222,128,0.4); }
+    option { background: #f5f7f5; }
+
+    /* MAIN CONTENT */
+    .main-content { padding: 28px 32px; }
+
+    /* SEARCH BAR */
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .search-input-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0 16px;
+      transition: border-color 0.2s;
+    }
+    .search-input-wrap:focus-within { border-color: rgba(74,222,128,0.4); }
+
+    .search-input-wrap svg { flex-shrink: 0; }
+
+    .search-input-wrap input {
+      flex: 1;
+      background: none;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.92rem;
+      padding: 14px 0;
+    }
+    .search-input-wrap input::placeholder { color: var(--muted); }
+
+    /* RESULTS INFO */
+    .results-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      font-size: 0.83rem;
+      color: var(--muted);
+    }
+
+    .results-count { font-weight: 600; color: var(--text); }
+
+    /* TABLE */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .table-scroll { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 900px;
+    }
+
+    thead th {
+      background: var(--surface2);
+      padding: 14px 16px;
+      text-align: left;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    thead th:first-child { width: 52px; }
+
+    tbody td {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(80,180,80,0.07);
+      font-size: 0.88rem;
+      vertical-align: top;
+    }
+
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(74,222,128,0.03); }
+
+    .td-id {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+
+    .td-name { font-weight: 600; color: var(--text); }
+
+    .type-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(74,222,128,0.1);
+      color: var(--green-dim);
+      border: 1px solid rgba(74,222,128,0.2);
+      white-space: nowrap;
+    }
+
+    .td-text {
+      color: var(--muted);
+      font-size: 0.83rem;
+      line-height: 1.5;
+      max-width: 200px;
+    }
+
+    .risk-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .risk-Düşük { background: rgba(74,222,128,0.12); color: #4ade80; border: 1px solid rgba(74,222,128,0.25); }
+    .risk-Orta  { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+    .risk-Yüksek { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
+    .risk-default { background: rgba(107,140,107,0.12); color: var(--muted); border: 1px solid var(--border); }
+
+    .td-actions { display: flex; gap: 6px; white-space: nowrap; }
+
+    .empty-state {
+      text-align: center;
+      padding: 72px 24px;
+      color: var(--muted);
+    }
+
+    .empty-state .icon { font-size: 3rem; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { font-size: 0.88rem; }
+
+    /* LOGIN OVERLAY */
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      width: min(100%, 400px);
+      box-shadow: 0 0 60px rgba(0,0,0,0.2);
+    }
+
+    .login-card h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      margin-bottom: 24px;
+      color: var(--green);
+    }
+
+    .form-field { margin-bottom: 16px; }
+
+    .form-field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-field input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 16px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-field input:focus { border-color: rgba(74,222,128,0.5); }
+
+    .login-submit {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--green-dark), var(--green-dim));
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      margin-top: 8px;
+      transition: all 0.2s;
+    }
+    .login-submit:hover { opacity: 0.9; transform: scale(1.02); }
+
+    .login-error {
+      color: var(--red);
+      font-size: 0.82rem;
+      margin-top: 10px;
+    }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(6px);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      width: min(100%, 500px);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-card h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+
+    .modal-card .form-field textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .modal-card .form-field select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+    }
+    option { background: var(--surface2); }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    /* PAGINATION */
+    .pagination {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 24px;
+    }
+
+    .page-btn {
+      width: 36px; height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .page-btn:hover, .page-btn.active { border-color: var(--green-dim); color: var(--green); background: rgba(74,222,128,0.08); }
+
+    @media (max-width: 900px) {
+      .page-body { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .main-content { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN OVERLAY -->
+  <div class="overlay" id="loginOverlay">
+    <div class="login-card">
+      <h2>🔐 Admin Girişi</h2>
+      <form id="loginForm">
+        <div class="form-field">
+          <label>Kullanıcı Adı</label>
+          <input type="text" id="adminUser" required autocomplete="username" />
+        </div>
+        <div class="form-field">
+          <label>Şifre</label>
+          <input type="password" id="adminPass" required autocomplete="current-password" />
+        </div>
+        <button type="submit" class="login-submit">Giriş Yap</button>
+        <div class="login-error" id="loginError"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-card">
+      <h2 id="modalTitle">Pestisit Ekle</h2>
+      <form id="pesticideForm">
+        <input type="hidden" id="editId">
+        <div class="form-field">
+          <label>Pestisit Adı *</label>
+          <input type="text" id="fName" required />
+        </div>
+        <div class="form-field">
+          <label>Tür *</label>
+          <select id="fType" required>
+            <option value="">Seçiniz</option>
+            <option>Fungisit</option>
+            <option>Koruyucu Fungisit</option>
+            <option>Böcek İlacı</option>
+            <option>Bakterisit</option>
+            <option>Herbisit</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Hedef Hastalık</label>
+          <input type="text" id="fDisease" />
+        </div>
+        <div class="form-field">
+          <label>Etki Mekanizması</label>
+          <textarea id="fMech"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Avantaj</label>
+          <textarea id="fAdv"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Risk Seviyesi *</label>
+          <select id="fRisk" required>
+            <option value="">Seçiniz</option>
+            <option>Düşük</option>
+            <option>Orta</option>
+            <option>Yüksek</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="closeModal()">İptal</button>
+          <button type="submit" class="btn btn-green">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <a href="test.html" class="back-btn">← Ana Sayfa</a>
+    <div class="header-title">🌿 Pestisit Veritabanı</div>
+    <div class="header-right">
+      <button class="btn btn-green" id="addBtn" style="display:none" onclick="openAddModal()">+ Ekle</button>
+      <button class="btn btn-ghost" id="loginBtn" onclick="showLoginOverlay()">🔐 Admin</button>
+      <button class="btn btn-red" id="logoutBtn" style="display:none" onclick="doLogout()">Çıkış</button>
+    </div>
+  </div>
+
+  <div class="page-body">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <h4>İstatistikler</h4>
+        <div class="stat-pill" onclick="filterByType('')" id="pill-all">
+          <span class="stat-pill-label">Tüm Pestisitler</span>
+          <span class="stat-pill-count" id="cnt-total">—</span>
+        </div>
+        <div class="stat-pill" onclick="filterByType('Fungisit')">
+          <span class="stat-pill-label">🍄 Fungisit</span>
+          <span class="stat-pill-count" id="cnt-f">—</span>
+        </div>
+        <div class="stat-pill" onclick="filterByType('Herbisit')">
+          <span class="stat-pill-label">🌾 Herbisit</span>
+          <span class="stat-pill-count" id="cnt-h">—</span>
+        </div>
+        <div class="stat-pill" onclick="filterByType('Böcek')">
+          <span class="stat-pill-label">🦟 Böcek İlacı</span>
+          <span class="stat-pill-count" id="cnt-b">—</span>
+        </div>
+        <div class="stat-pill" onclick="filterByType('Bakterisit')">
+          <span class="stat-pill-label">🦠 Bakterisit</span>
+          <span class="stat-pill-count" id="cnt-bak">—</span>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
+      <div class="sidebar-section">
+        <h4>Filtreler</h4>
+
+        <div class="filter-label">Risk Seviyesi</div>
+        <select class="filter-select" id="sideRisk" onchange="applyFilters()">
+          <option value="">Tüm Riskler</option>
+          <option>Düşük</option>
+          <option>Orta</option>
+          <option>Yüksek</option>
+        </select>
+
+        <div class="filter-label">Etki Mekanizması</div>
+        <input class="filter-input" id="sideMech" placeholder="Örn: ergosterol..." oninput="applyFilters()" />
+
+        <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="clearAllFilters()">↺ Temizle</button>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <svg width="16" height="16" fill="none" stroke="#6b8c6b" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" id="searchInput" placeholder="Pestisit adı, tür veya hastalık ara..." oninput="applyFilters()" />
+        </div>
+        <button class="btn btn-green" onclick="openSearchPage()">Ara</button>
+        <button class="btn btn-ghost" onclick="clearAllFilters()">Temizle</button>
+      </div>
+
+      <div class="results-info">
+        <span><span class="results-count" id="resultsCount">0</span> sonuç</span>
+        <span id="adminNote" style="color:var(--amber);font-size:0.8rem;display:none">⚡ Admin modu aktif</span>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Pestisit Adı</th>
+                <th>Tür</th>
+                <th>Hedef Hastalık</th>
+                <th>Etki Mekanizması</th>
+                <th>Avantaj</th>
+                <th>Risk</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr>
+                <td colspan="8">
+                  <div class="empty-state">
+                    <div class="icon">🔍</div>
+                    <h3>Yükleniyor...</h3>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </div>
+
+  <script>
+    const AUTH_KEY = 'psAdminAuth';
+    let allData = [];
+    let filtered = [];
+    let adminAuth = null;
+    let currentPage = 1;
+    const PAGE_SIZE = 20;
+    let typeFilter = '';
+
+    // ── AUTH ──
+    function showLoginOverlay() {
+      document.getElementById('loginOverlay').style.display = 'flex';
+    }
+
+    function hideLoginOverlay() {
+      document.getElementById('loginOverlay').style.display = 'none';
+    }
+
+    async function verifyAuth(encoded) {
+      try {
+        const r = await fetch('/api/admin/pesticides', { headers: { Authorization: `Basic ${encoded}` } });
+        return r.ok;
+      } catch { return false; }
+    }
+
+    function setAdminUI(isAdmin) {
+      document.getElementById('addBtn').style.display = isAdmin ? 'inline-flex' : 'none';
+      document.getElementById('loginBtn').style.display = isAdmin ? 'none' : 'inline-flex';
+      document.getElementById('logoutBtn').style.display = isAdmin ? 'inline-flex' : 'none';
+      document.getElementById('adminNote').style.display = isAdmin ? 'inline' : 'none';
+    }
+
+    document.getElementById('loginForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const u = document.getElementById('adminUser').value.trim();
+      const p = document.getElementById('adminPass').value.trim();
+      const encoded = btoa(`${u}:${p}`);
+      const ok = await verifyAuth(encoded);
+      if (!ok) {
+        document.getElementById('loginError').textContent = 'Kullanıcı adı veya şifre hatalı.';
+        return;
+      }
+      adminAuth = `Basic ${encoded}`;
+      sessionStorage.setItem(AUTH_KEY, encoded);
+      hideLoginOverlay();
+      setAdminUI(true);
+      await loadAdmin();
+    };
+
+    function doLogout() {
+      adminAuth = null;
+      sessionStorage.removeItem(AUTH_KEY);
+      setAdminUI(false);
+      allData = [];
+      filtered = [];
+      renderTable();
+      updateSidebar();
+    }
+
+    function openSearchPage() {
+      const q = document.getElementById('searchInput').value.trim();
+      if (!q) return;
+      window.open('search.html?search=' + encodeURIComponent(q), '_blank');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const input = document.getElementById('searchInput');
+      if (input) {
+        input.addEventListener('keypress', e => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            openSearchPage();
+          }
+        });
+      }
+    });
+
+    // ── LOAD ──
+    async function load() {
+      const stored = sessionStorage.getItem(AUTH_KEY);
+      if (stored) {
+        const ok = await verifyAuth(stored);
+        if (ok) {
+          adminAuth = `Basic ${stored}`;
+          setAdminUI(true);
+          await loadAdmin();
+          return;
+        } else {
+          sessionStorage.removeItem(AUTH_KEY);
+        }
+      }
+
+      // Public: try URL search
+      const params = new URLSearchParams(location.search);
+      const q = params.get('search');
+      if (q) {
+        document.getElementById('searchInput').value = q;
+        await loadSearch(q);
+      } else {
+        renderEmpty('Arama yapın veya admin olarak giriş yapın', 'Verileri görüntülemek için yukarıdan admin girişi yapın ya da arama kutusunu kullanın.');
+      }
+    }
+
+    async function loadAdmin() {
+      const r = await fetch('/api/admin/pesticides', { headers: { Authorization: adminAuth } });
+      if (!r.ok) return;
+      const d = await r.json();
+      allData = d.pesticides || [];
+      applyFilters();
+      updateSidebar();
+    }
+
+    let isSearching = false;
+
+    async function loadSearch(q) {
+      isSearching = true;
+      const r = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+      if (!r.ok) { isSearching = false; return; }
+      const d = await r.json();
+      allData = d.pesticides || [];
+      filtered = allData;
+      currentPage = 1;
+      renderTable();
+      document.getElementById('resultsCount').textContent = filtered.length;
+      updateSidebar();
+      isSearching = false;
+    }
+
+    // ── FILTERS ──
+    function filterByType(t) {
+      typeFilter = t;
+      document.getElementById('searchInput').value = t;
+      applyFilters();
+    }
+
+    function applyFilters() {
+      if (isSearching) return;
+      
+      const search = document.getElementById('searchInput').value.toLowerCase().trim();
+      const risk = document.getElementById('sideRisk').value;
+      const mech = document.getElementById('sideMech').value.toLowerCase().trim();
+
+      if (!adminAuth && !search && !typeFilter) {
+        filtered = [];
+        renderTable();
+        document.getElementById('resultsCount').textContent = '0';
+        return;
+      }
+
+      if (!adminAuth && (search || typeFilter)) {
+        const q = search || typeFilter;
+        loadSearch(q);
+        return;
+      }
+
+      filtered = allData.filter(p => {
+        const matchSearch = !search ||
+          p.name.toLowerCase().includes(search) ||
+          (p.type || '').toLowerCase().includes(search) ||
+          (p.target_disease || '').toLowerCase().includes(search);
+        const matchRisk = !risk || p.risk_level === risk;
+        const matchMech = !mech || (p.mechanism || '').toLowerCase().includes(mech);
+        return matchSearch && matchRisk && matchMech;
+      });
+
+      currentPage = 1;
+      renderTable();
+      document.getElementById('resultsCount').textContent = filtered.length;
+    }
+
+    function clearAllFilters() {
+      typeFilter = '';
+      document.getElementById('searchInput').value = '';
+      document.getElementById('sideRisk').value = '';
+      document.getElementById('sideMech').value = '';
+      if (adminAuth) applyFilters();
+      else { allData = []; filtered = []; renderTable(); document.getElementById('resultsCount').textContent = '0'; }
+    }
+
+    // ── RENDER ──
+    function getRiskClass(risk) {
+      if (!risk) return 'risk-default';
+      if (risk.includes('Düşük') || risk === 'Düşük') return 'risk-Düşük';
+      if (risk.includes('Orta') || risk === 'Orta') return 'risk-Orta';
+      if (risk.includes('Yüksek') || risk === 'Yüksek') return 'risk-Yüksek';
+      return 'risk-default';
+    }
+
+    function getRiskLabel(risk) {
+      if (!risk) return '—';
+      if (risk.includes('Düşük') || risk === 'Düşük') return '● Düşük';
+      if (risk.includes('Orta') || risk === 'Orta') return '● Orta';
+      if (risk.includes('Yüksek') || risk === 'Yüksek') return '● Yüksek';
+      return risk.substring(0, 20);
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+
+      if (filtered.length === 0 && allData.length === 0) {
+        renderEmpty('Veri bulunamadı', 'Arama yapın veya admin olarak giriş yapın.');
+        renderPagination(0);
+        return;
+      }
+
+      if (filtered.length === 0) {
+        renderEmpty('Sonuç bulunamadı', 'Farklı arama terimleri deneyin.');
+        renderPagination(0);
+        return;
+      }
+
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const page = filtered.slice(start, start + PAGE_SIZE);
+
+      tbody.innerHTML = page.map(p => `
+        <tr>
+          <td class="td-id">${p.id}</td>
+          <td class="td-name">${p.name}</td>
+          <td><span class="type-badge">${p.type || '—'}</span></td>
+          <td class="td-text">${p.target_disease || '—'}</td>
+          <td class="td-text">${p.mechanism || '—'}</td>
+          <td class="td-text">${p.advantage || '—'}</td>
+          <td><span class="risk-badge ${getRiskClass(p.risk_level)}">${getRiskLabel(p.risk_level)}</span></td>
+          <td class="td-actions">
+            ${adminAuth ? `
+              <button class="btn btn-amber" onclick="editPesticide(${p.id})" style="padding:6px 10px;font-size:0.75rem">✏️</button>
+              <button class="btn btn-red" onclick="deletePesticide(${p.id})" style="padding:6px 10px;font-size:0.75rem">🗑️</button>
+            ` : ''}
+          </td>
+        </tr>
+      `).join('');
+
+      document.getElementById('resultsCount').textContent = filtered.length;
+      renderPagination(filtered.length);
+    }
+
+    function renderEmpty(title, msg) {
+      document.getElementById('tableBody').innerHTML = `
+        <tr><td colspan="8">
+          <div class="empty-state">
+            <div class="icon">🌿</div>
+            <h3>${title}</h3>
+            <p>${msg}</p>
+          </div>
+        </td></tr>
+      `;
+    }
+
+    function renderPagination(total) {
+      const pages = Math.ceil(total / PAGE_SIZE);
+      const pg = document.getElementById('pagination');
+      if (pages <= 1) { pg.innerHTML = ''; return; }
+
+      let html = '';
+      if (currentPage > 1) html += `<button class="page-btn" onclick="goPage(${currentPage-1})">←</button>`;
+      for (let i = 1; i <= pages; i++) {
+        if (i === 1 || i === pages || Math.abs(i - currentPage) <= 2) {
+          html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+        } else if (Math.abs(i - currentPage) === 3) {
+          html += `<span style="color:var(--muted);padding:0 4px">…</span>`;
+        }
+      }
+      if (currentPage < pages) html += `<button class="page-btn" onclick="goPage(${currentPage+1})">→</button>`;
+      pg.innerHTML = html;
+    }
+
+    function goPage(p) { currentPage = p; renderTable(); window.scrollTo(0, 0); }
+
+    function updateSidebar() {
+      const cnt = id => document.getElementById(id);
+      cnt('cnt-total').textContent = allData.length;
+      cnt('cnt-f').textContent = allData.filter(p => p.type && p.type.includes('Fungisit')).length;
+      cnt('cnt-h').textContent = allData.filter(p => p.type && p.type.includes('Herbisit')).length;
+      cnt('cnt-b').textContent = allData.filter(p => p.type && p.type.includes('Böcek')).length;
+      cnt('cnt-bak').textContent = allData.filter(p => p.type && p.type.includes('Bakterisit')).length;
+    }
+
+    // ── CRUD ──
+    function openAddModal() {
+      document.getElementById('modalTitle').textContent = 'Yeni Pestisit Ekle';
+      document.getElementById('pesticideForm').reset();
+      document.getElementById('editId').value = '';
+      document.getElementById('modalOverlay').style.display = 'flex';
+    }
+
+    function editPesticide(id) {
+      const p = allData.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('modalTitle').textContent = 'Pestisit Düzenle';
+      document.getElementById('editId').value = p.id;
+      document.getElementById('fName').value = p.name;
+      document.getElementById('fType').value = p.type;
+      document.getElementById('fDisease').value = p.target_disease || '';
+      document.getElementById('fMech').value = p.mechanism || '';
+      document.getElementById('fAdv').value = p.advantage || '';
+      document.getElementById('fRisk').value = p.risk_level;
+      document.getElementById('modalOverlay').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').style.display = 'none';
+    }
+
+    document.getElementById('pesticideForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editId').value;
+      const body = {
+        name: document.getElementById('fName').value,
+        type: document.getElementById('fType').value,
+        target_disease: document.getElementById('fDisease').value,
+        mechanism: document.getElementById('fMech').value,
+        advantage: document.getElementById('fAdv').value,
+        risk_level: document.getElementById('fRisk').value,
+      };
+
+      const url = id ? `/api/admin/pesticides/${id}` : '/api/admin/pesticides';
+      const method = id ? 'PUT' : 'POST';
+
+      const r = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', Authorization: adminAuth },
+        body: JSON.stringify(body)
+      });
+
+      if (r.ok) {
+        closeModal();
+        await loadAdmin();
+      } else {
+        alert('Kaydetme hatası!');
+      }
+    };
+
+    async function deletePesticide(id) {
+      if (!confirm('Bu pestisiti silmek istiyor musunuz?')) return;
+      const r = await fetch(`/api/admin/pesticides/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: adminAuth }
+      });
+      if (r.ok) await loadAdmin();
+      else alert('Silme hatası!');
+    }
+
+    // ── INIT ──
+    load();
+  </script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PestiSmart — Arama Sonuçları</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f8faf8;
+      --surface: #ffffff;
+      --surface2: #f5f7f5;
+      --border: rgba(0,0,0,0.1);
+      --green: #22c55e;
+      --green-dark: #15803d;
+      --green-dim: #16a34a;
+      --muted: #6b7280;
+      --text: #1a1a1a;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; min-height: 100vh; background: var(--bg); color: var(--text); }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background: radial-gradient(circle at top left, rgba(34,197,94,.08), transparent 28%),
+                  radial-gradient(circle at bottom right, rgba(34,197,94,.05), transparent 30%);
+      pointer-events: none;
+    }
+    .page { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+
+    .topbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 28px; }
+    .topbar a.back { color: var(--green); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
+    .topbar h1 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 3vw, 2.8rem); line-height: 1.05; margin-right: auto; }
+
+    .search-wrap { display: grid; grid-template-columns: 1fr auto; gap: 12px; width: 100%; margin-bottom: 20px; }
+    .search-wrap input {
+      width: 100%; border-radius: 14px; border: 1px solid var(--border);
+      padding: 14px 16px; font-size: 1rem; outline: none;
+      font-family: 'DM Sans', sans-serif; background: var(--surface);
+      transition: border-color 0.2s;
+    }
+    .search-wrap input:focus { border-color: rgba(34,197,94,0.4); }
+    .search-wrap button {
+      border: none; border-radius: 14px; background: var(--green);
+      color: #fff; padding: 14px 28px; font-size: 1rem;
+      cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600;
+      transition: transform .2s ease, opacity .2s;
+    }
+    .search-wrap button:hover { transform: translateY(-1px); opacity: 0.9; }
+
+    .hint { color: var(--muted); margin-bottom: 22px; font-size: 0.9rem; }
+    .summary { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 24px; font-size: 0.9rem; color: var(--muted); }
+    .summary strong { color: var(--green-dark); }
+
+    .results-list { display: grid; gap: 20px; }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 30px rgba(17,24,39,.05);
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .result-card:hover { box-shadow: 0 16px 40px rgba(17,24,39,.1); }
+
+    .card-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    }
+    .result-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; color: var(--green-dark); }
+    .result-formula { font-size: 0.82rem; color: var(--muted); margin-top: 4px; font-style: italic; }
+
+    .type-badge {
+      display: inline-block; padding: 4px 12px; border-radius: 999px;
+      font-size: 0.78rem; font-weight: 600; white-space: nowrap;
+      background: rgba(34,197,94,0.1); color: var(--green-dim);
+      border: 1px solid rgba(34,197,94,0.2);
+    }
+
+    .card-body { padding: 20px 24px; display: grid; gap: 16px; }
+
+    .info-section h4 {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.2px; color: var(--muted); margin-bottom: 8px;
+    }
+
+    .info-section p { font-size: 0.9rem; color: #444; line-height: 1.7; }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 4px 10px;
+      font-size: 0.8rem; color: var(--muted);
+    }
+    .tag.disease { background: rgba(239,68,68,0.06); border-color: rgba(239,68,68,0.15); color: #b91c1c; }
+    .tag.mechanism { background: rgba(59,130,246,0.06); border-color: rgba(59,130,246,0.15); color: #1d4ed8; }
+    .tag.usage { background: rgba(34,197,94,0.06); border-color: rgba(34,197,94,0.15); color: var(--green-dim); }
+
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    @media (max-width: 760px) {
+      .search-wrap { grid-template-columns: 1fr; }
+      .card-grid { grid-template-columns: 1fr; }
+      .card-header { flex-direction: column; }
+    }
+
+    .empty-state {
+      padding: 48px 24px; border-radius: var(--radius);
+      background: rgba(255,255,255,.9); border: 1px dashed var(--border);
+      text-align: center; color: var(--muted);
+    }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+    .loading { text-align: center; padding: 48px; color: var(--muted); }
+    .loading-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--green); margin: 0 3px; animation: bounce 1.2s infinite; }
+    .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+    .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-10px)} }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <a class="back" href="test.html">← Ana Sayfa</a>
+      <h1>Pestisit Arama Sonuçları</h1>
+    </div>
+
+    <div class="search-wrap">
+      <input id="searchInput" type="search" placeholder="Pestisit adı, kimyasal grup veya kategori ara..." />
+      <button id="searchButton">Ara</button>
+    </div>
+
+    <p class="hint">Aramanız doğrudan veritabanında kontrol edilir. Hedef hastalıklar, etki mekanizmaları ve kullanım alanları gösterilir.</p>
+
+    <div class="summary">
+      <span>Aranan: <strong id="queryLabel">-</strong></span>
+      <span>Toplam sonuç: <strong id="resultCount">0</strong></span>
+    </div>
+
+    <div id="results" class="results-list"></div>
+  </div>
+
+  <script>
+    const input = document.getElementById('searchInput');
+    const button = document.getElementById('searchButton');
+    const resultsEl = document.getElementById('results');
+    const resultCount = document.getElementById('resultCount');
+    const queryLabel = document.getElementById('queryLabel');
+
+    function setMessage(icon, title, msg) {
+      resultsEl.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">${icon}</div>
+          <p><strong>${title}</strong></p>
+          ${msg ? `<p style="margin-top:8px;font-size:0.88rem">${msg}</p>` : ''}
+        </div>`;
+      resultCount.textContent = '0';
+    }
+
+    function renderResults(items) {
+      if (!items || items.length === 0) {
+        setMessage('🔍', 'Sonuç bulunamadı', 'Farklı bir arama terimi deneyin.');
+        return;
+      }
+      resultCount.textContent = items.length;
+      resultsEl.innerHTML = items.map(item => {
+        const hastaliklar = item.hastaliklar ? item.hastaliklar.split(',').map(h => `<span class="tag disease">${h.trim()}</span>`).join('') : '<span class="tag">Bilgi yok</span>';
+        const mekanizmalar = item.mekanizmalar ? item.mekanizmalar.split('.').filter(m => m.trim()).slice(0,4).map(m => `<span class="tag mechanism">${m.trim()}</span>`).join('') : '<span class="tag">Bilgi yok</span>';
+        const kullanim = item.kullanim_alanlari ? item.kullanim_alanlari.split(',').map(u => `<span class="tag usage">${u.trim()}</span>`).join('') : '<span class="tag">Bilgi yok</span>';
+
+        return `
+        <div class="result-card">
+          <div class="card-header">
+            <div>
+              <div class="result-title">${item.name}</div>
+              ${item.molekuler_formul ? `<div class="result-formula">${item.molekuler_formul} ${item.kimyasal_grup ? '· ' + item.kimyasal_grup : ''}</div>` : ''}
+            </div>
+            <span class="type-badge">${item.type || '—'}</span>
+          </div>
+          <div class="card-body">
+            ${item.genel_bilgi ? `
+            <div class="info-section">
+              <h4>Genel Bilgi</h4>
+              <p>${item.genel_bilgi}</p>
+            </div>` : ''}
+            <div class="card-grid">
+              <div class="info-section">
+                <h4>🎯 Hedef Hastalıklar</h4>
+                <div class="tags">${hastaliklar}</div>
+              </div>
+              <div class="info-section">
+                <h4>⚗️ Etki Mekanizması</h4>
+                <div class="tags">${mekanizmalar}</div>
+              </div>
+              <div class="info-section">
+                <h4>🌱 Kullanım Alanları</h4>
+                <div class="tags">${kullanim}</div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    async function loadSearch(query) {
+      const trimmed = query.trim();
+      if (!trimmed) {
+        queryLabel.textContent = '-';
+        setMessage('🌿', 'Arama yapın', 'Üstteki alandan pestisit arayabilirsiniz.');
+        return;
+      }
+      queryLabel.textContent = trimmed;
+      resultsEl.innerHTML = `<div class="loading"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></div>`;
+
+      try {
+        // Önce temel arama
+        const r = await fetch(`/api/search?q=${encodeURIComponent(trimmed)}`);
+        if (!r.ok) { setMessage('❌', 'Hata', 'Arama sırasında hata oluştu.'); return; }
+        const data = await r.json();
+        const items = data.pesticides || [];
+
+        if (items.length === 0) {
+          setMessage('🔍', 'Sonuç bulunamadı', 'Farklı bir arama terimi deneyin.');
+          resultCount.textContent = '0';
+          return;
+        }
+
+        // Her madde için detay çek
+        const detailed = await Promise.all(items.map(async item => {
+          try {
+            const dr = await fetch(`/api/pesticides/${item.id}`);
+            if (!dr.ok) return item;
+            const dd = await dr.json();
+            return {
+              ...item,
+              genel_bilgi: dd.pesticide?.genel_bilgi || item.genel_bilgi,
+              molekuler_formul: dd.pesticide?.molekuler_formul || item.molekuler_formul,
+              kimyasal_grup: dd.pesticide?.kimyasal_grup || item.kimyasal_grup,
+              hastaliklar: dd.hastaliklar?.join(', ') || '',
+              mekanizmalar: dd.mekanizmalar?.join('. ') || '',
+              kullanim_alanlari: dd.kullanim_alanlari?.join(', ') || ''
+            };
+          } catch { return item; }
+        }));
+
+        renderResults(detailed);
+      } catch(e) {
+        setMessage('❌', 'Hata', 'Sunucuya bağlanılamadı.');
+      }
+    }
+
+    button.addEventListener('click', () => {
+      const value = input.value;
+      if (value.trim()) {
+        history.replaceState(null, '', `?search=${encodeURIComponent(value.trim())}`);
+        loadSearch(value);
+      }
+    });
+
+    input.addEventListener('keypress', e => {
+      if (e.key === 'Enter') button.click();
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(location.search);
+      const q = params.get('search') || '';
+      if (q) {
+        input.value = q;
+        loadSearch(q);
+      } else {
+        setMessage('🌿', 'Arama yapın', 'Üstteki alandan pestisit arayabilirsiniz.');
+      }
+    });
+  </script>
+</body>
+</html>
